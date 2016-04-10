@@ -22,4 +22,7 @@ php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php jsonservice/Indego/sync
 
 php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php jsonservice/Trip/count start=01-01-2015
 
+OLD_HOME=$HOME
+HOME=`pwd`
 cd $OPENSHIFT_REPO_DIR && npm install
+HOME=$OLD_HOME

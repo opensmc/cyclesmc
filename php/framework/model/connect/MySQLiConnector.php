@@ -57,6 +57,7 @@ class MySQLiConnector extends DBConnector {
 		$selectedDB = ($selectDB && !empty($parameters['database'])) ? $parameters['database'] : null;
 
 		if(!empty($parameters['port'])) {
+            print $parameters['server'];
 			$this->dbConn = new MySQLi(
 				$parameters['server'],
 				$parameters['username'],

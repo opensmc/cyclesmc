@@ -8,8 +8,6 @@ $port = (getenv('OPENSHIFT_MYSQL_DB_PORT')) ? getenv('OPENSHIFT_MYSQL_DB_PORT') 
 $user = (getenv('OPENSHIFT_MYSQL_DB_USERNAME')) ? getenv('OPENSHIFT_MYSQL_DB_USERNAME') : putenv('OPENSHIFT_MYSQL_DB_USERNAME=root');
 $pass = (getenv('OPENSHIFT_MYSQL_DB_PASSWORD')) ? getenv('OPENSHIFT_MYSQL_DB_PASSWORD') : putenv('OPENSHIFT_MYSQL_DB_PASSWORD=root');
 
-parent::__construct( $host, $user, $pass, $database, $port );
-
 define('SS_DATABASE_SERVER', $host);
 define('SS_DATABASE_PORT', $port);
 define('SS_DATABASE_USERNAME', $user);

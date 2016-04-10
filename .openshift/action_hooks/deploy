@@ -11,7 +11,7 @@
 unset GIT_DIR
 
 echo "running deploy scripts"
-ln -sf $OPENSHIFT_DATA_DIR\assets $OPENSHIFT_REPO_DIR/php/
+# ln -sf $OPENSHIFT_DATA_DIR\assets $OPENSHIFT_REPO_DIR/php/
 # ln -sf $OPENSHIFT_DATA_DIR\cache $OPENSHIFT_REPO_DIR/php/
 #link assets and cache folders to the persistent data directories
 # ln -sf $OPENSHIFT_DATA_DIR\api/assets $OPENSHIFT_REPO_DIR/api/
@@ -21,3 +21,5 @@ ln -sf $OPENSHIFT_DATA_DIR\assets $OPENSHIFT_REPO_DIR/php/
 php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php jsonservice/Indego/sync
 
 php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php jsonservice/Trip/count start=01-01-2015
+
+cd $OPENSHIFT_REPO_DIR && npm install

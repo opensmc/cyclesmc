@@ -56,10 +56,7 @@ class MySQLiConnector extends DBConnector {
 		// Normally $selectDB is set to false by the MySQLDatabase controller, as per convention
 		$selectedDB = ($selectDB && !empty($parameters['database'])) ? $parameters['database'] : null;
 
-        print $parameters;
-        
 		if(!empty($parameters['port'])) {
-            print $parameters['server'];
 			$this->dbConn = new MySQLi(
 				$parameters['server'],
 				$parameters['username'],

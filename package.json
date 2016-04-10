@@ -18,6 +18,7 @@
     "prestart": "npm update"
   },
   "dependencies": {
-    "angular": "^1.5.3"
+    "angular": "1.5.3",
+    "bower": "1.7.9"
   }
 }

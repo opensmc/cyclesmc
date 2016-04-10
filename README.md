@@ -9,7 +9,7 @@ at https://www.openshift.com (an account suitable for running this application i
 free). You will then need to `gem install rhc` (you may need a working ruby install
 first). Finally, you'll be able to run something like:
 
-    rhc app create cyclesmc php-5.4 mysql-5.1 cron CYCLE_DB_NAME=cyclesmc --from-code=git://github.com/opensmc/cyclesmc
+    rhc app create cyclesmc php-5.4 mysql-5.1 cron nodejs-0.10 CYCLE_DB_NAME=cyclesmc --from-code=git://github.com/opensmc/cyclesmc
     
 **NOTE:** You may want to change the `CYCLE_DB_NAME` and git remote from which to install
 

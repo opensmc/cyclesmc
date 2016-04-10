@@ -25,6 +25,7 @@ php "${OPENSHIFT_REPO_DIR}\php/framework/cli-script.php" jsonservice/Trip/count 
 OLD_HOME="${HOME}"
 pushd "${OPENSHIFT_REPO_DIR}"
     HOME=`pwd`
-    npm install
+    npm install --production
+    bower install
 popd
 HOME="${OLD_HOME}"

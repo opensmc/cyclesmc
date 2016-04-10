@@ -16,5 +16,8 @@
   "scripts": {
     "postinstall": "bower update",
     "prestart": "npm update"
+  },
+  "dependencies": {
+    "angular": "^1.5.3"
   }
 }

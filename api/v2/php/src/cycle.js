@@ -84,8 +84,8 @@
       {name: 'icon-settings'    , color:"#A00", theme:"md-warn md-hue-5"}
     ]
     
-    var weatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/currently');
-    var hourlyWeatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/hourly');
+    var weatherRef = new Firebase('https://publicdata-weather.firebaseio.com/sanfrancisco/currently');
+    var hourlyWeatherRef = new Firebase('https://publicdata-weather.firebaseio.com/sanfrancisco/hourly');
     hourlyWeatherRef.child('summary').on('value', function(snapshot) {
         //console.log('Temperature is currently ' + snapshot.val());
         self.weather ={};

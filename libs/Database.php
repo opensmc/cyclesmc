@@ -9,9 +9,6 @@ require_once( 'Util.php' );
 
 abstract class DatabaseConnection extends mysqli
 {
-	
-	// const DATABASE = 'cyclelive';
-
 	public function __construct( $host, $user, $password, $database, $port )
 	{
 		parent::__construct( $host, $user, $password, $database, $port );
@@ -33,11 +30,11 @@ class LocalDatabaseConnection extends DatabaseConnection
 {
 	public function __construct()
 	{
-		$database = (getenv('CYCLE_DB_NAME')) ? getenv('CYCLE_DB_NAME') : putenv('CYCLE_DB_NAME=cyclelive');
 		/*
 		* If you are using openshift mysql database cartridge, or want to use it for testing, uncomment this section, and comment out any other database construct ref
 		*/
-		// This requires the inclusion of mysql db cartridge. 
+		// This requires the inclusion of mysql db cartridge.
+		$database = (getenv('CYCLE_DB_NAME')) ? getenv('CYCLE_DB_NAME') : putenv('CYCLE_DB_NAME=cyclesmc');
 		$host = (getenv('OPENSHIFT_MYSQL_DB_HOST')) ? getenv('OPENSHIFT_MYSQL_DB_HOST') : putenv('OPENSHIFT_MYSQL_DB_HOST=localhost');
 		$port = (getenv('OPENSHIFT_MYSQL_DB_PORT')) ? getenv('OPENSHIFT_MYSQL_DB_PORT') : putenv('OPENSHIFT_MYSQL_DB_PORT=3306');
 		$user = (getenv('OPENSHIFT_MYSQL_DB_USERNAME')) ? getenv('OPENSHIFT_MYSQL_DB_USERNAME') : putenv('OPENSHIFT_MYSQL_DB_USERNAME=root');

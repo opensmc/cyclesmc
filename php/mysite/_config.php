@@ -1,10 +1,10 @@
 <?php
 
 global $project;
-$project = 'mysite';
+$project = (getenv('OPENSHIFT_APP_NAME')) ? getenv('OPENSHIFT_APP_NAME') : putenv('OPENSHIFT_APP_NAME=cyclesmc');
 
 global $database;
-$database = 'cyclelive';
+$database = (getenv('CYCLE_DB_NAME')) ? getenv('CYCLE_DB_NAME') : putenv('CYCLE_DB_NAME=cyclesmc');
 
 // Use _ss_environment.php file for configuration
 require_once("conf/ConfigureFromEnv.php");

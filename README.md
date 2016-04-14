@@ -13,6 +13,18 @@ first). Finally, you'll be able to run something like:
     
 **NOTE:** You may want to change the `CYCLE_DB_NAME` and git remote from which to install
 
+Running Locally
+-----
+
+After cloning this repo, ensure that you have the following installed:
+1. MySQL
+2. PHP (5.4 or higher)
+Then, run
+
+    cd web && php -S localhost:8000
+    
+to create a local server running the app on port 8000.
+
 # cyclephilly
 CyclePhilly bike tracking application
 ===================

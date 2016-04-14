@@ -21,15 +21,4 @@ ln -sf "${OPENSHIFT_REPO_DIR}/php/bower_components" "${OPENSHIFT_REPO_DIR}"
 # php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php dev/build flush=1
 php "${OPENSHIFT_REPO_DIR}/php/framework/cli-script.php" jsonservice/Indego/sync
 
-php "${OPENSHIFT_REPO_DIR}/php/framework/cli-script.php" jsonservice/Trip/count start=04-01-2016
-
-#OLD_HOME="${HOME}"
-#pushd "${OPENSHIFT_REPO_DIR}"
-#    HOME=`pwd`
-#    npm config set prefix=~/npm
-#    export PATH="${PATH}:~/npm/bin"
-#    npm cache clean
-#    npm install -g bower
-#    bower install
-#popd
-#HOME="${OLD_HOME}"
+php "${OPENSHIFT_REPO_DIR}/php/framework/cli-script.php" jsonservice/Trip/count start=01-01-2016

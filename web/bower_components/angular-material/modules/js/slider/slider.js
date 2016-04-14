@@ -2,19 +2,97 @@
  * Angular Material Design
  * https://github.com/angular/material
  * @license MIT
- * v0.7.0-rc3
+ * v1.1.0-rc3-master-30e6657
  */
-(function() {
-'use strict';
+(function( window, angular, undefined ){
+"use strict";
+
+  /**
+   * @ngdoc module
+   * @name material.components.slider
+   */
+  angular.module('material.components.slider', [
+    'material.core'
+  ])
+  .directive('mdSlider', SliderDirective)
+  .directive('mdSliderContainer', SliderContainerDirective);
 
 /**
- * @ngdoc module
- * @name material.components.slider
+ * @ngdoc directive
+ * @name mdSliderContainer
+ * @module material.components.slider
+ * @restrict E
+ * @description
+ * The `<md-slider-container>` contains slider with two other elements.
+ *
+ *
+ * @usage
+ * <h4>Normal Mode</h4>
+ * <hljs lang="html">
+ * </hljs>
  */
-angular.module('material.components.slider', [
-  'material.core'
-])
-  .directive('mdSlider', SliderDirective);
+function SliderContainerDirective() {
+  return {
+    controller: function () {},
+    compile: function (elem) {
+      var slider = elem.find('md-slider');
+      if (!slider) {
+        return;
+      }
+
+      var vertical = slider.attr('md-vertical');
+
+      if (vertical !== undefined) {
+        elem.attr('md-vertical', '');
+      }
+
+      if(!slider.attr('flex')) {
+        slider.attr('flex', '');
+      }
+
+      return function postLink(scope, element, attr, ctrl) {
+        element.addClass('_md');     // private md component indicator for styling
+
+        // We have to manually stop the $watch on ngDisabled because it exists
+        // on the parent scope, and won't be automatically destroyed when
+        // the component is destroyed.
+        function setDisable(value) {
+          element.children().attr('disabled', value);
+          element.find('input').attr('disabled', value);
+        }
+
+        var stopDisabledWatch = angular.noop;
+
+        if (attr.disabled) {
+          setDisable(true);
+        }
+        else if (attr.ngDisabled) {
+          stopDisabledWatch = scope.$watch(attr.ngDisabled, function (value) {
+            setDisable(value);
+          });
+        }
+
+        scope.$on('$destroy', function () {
+          stopDisabledWatch();
+        });
+
+        var initialMaxWidth;
+
+        ctrl.fitInputWidthToTextLength = function (length) {
+          var input = element.find('md-input-container');
+          var computedStyle = getComputedStyle(input[0]);
+          var minWidth = parseInt(computedStyle['min-width']);
+          var padding = parseInt(computedStyle['padding']) * 2;
+          initialMaxWidth = initialMaxWidth || parseInt(computedStyle['max-width']);
+
+          var newMaxWidth = Math.max(initialMaxWidth, minWidth + padding + (minWidth / 2 * length));
+
+          input.css('max-width', newMaxWidth + 'px');
+        };
+      }
+    }
+  }
+}
 
 /**
  * @ngdoc directive
@@ -24,6 +102,10 @@ angular.module('material.components.slider', [
  * @description
  * The `<md-slider>` component allows the user to choose from a range of
  * values.
+ *
+ * As per the [material design spec](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
+ * the slider is in the accent color by default. The primary color palette may be used with
+ * the `md-primary` class.
  *
  * It has two modes: 'normal' mode, where the user slides between a wide range
  * of values, and 'discrete' mode, where the user slides between only a few
@@ -49,29 +131,52 @@ angular.module('material.components.slider', [
  * @param {number=} step The distance between values the user is allowed to pick. Default 1.
  * @param {number=} min The minimum value the user is allowed to pick. Default 0.
  * @param {number=} max The maximum value the user is allowed to pick. Default 100.
+ * @param {number=} round The amount of numbers after the decimal point, maximum is 6 to prevent scientific notation. Default 3.
  */
-function SliderDirective($mdTheming) {
+function SliderDirective($$rAF, $window, $mdAria, $mdUtil, $mdConstant, $mdTheming, $mdGesture, $parse, $log, $timeout) {
   return {
     scope: {},
-    require: ['?ngModel', 'mdSlider'],
-    controller: SliderController,
+    require: ['?ngModel', '?^mdSliderContainer'],
     template:
-      '<div class="md-track-container">' +
-        '<div class="md-track"></div>' +
-        '<div class="md-track md-track-fill"></div>' +
-        '<div class="md-track-ticks"></div>' +
-      '</div>' +
-      '<div class="md-thumb-container">' +
-        '<div class="md-thumb"></div>' +
-        '<div class="md-focus-thumb"></div>' +
-        '<div class="md-focus-ring"></div>' +
-        '<div class="md-sign">' +
-          '<span class="md-thumb-text"></span>' +
+      '<div class="_md-slider-wrapper">' +
+        '<div class="_md-slider-content">' +
+          '<div class="_md-track-container">' +
+            '<div class="_md-track"></div>' +
+            '<div class="_md-track _md-track-fill"></div>' +
+            '<div class="_md-track-ticks"></div>' +
+          '</div>' +
+          '<div class="_md-thumb-container">' +
+            '<div class="_md-thumb"></div>' +
+            '<div class="_md-focus-thumb"></div>' +
+            '<div class="_md-focus-ring"></div>' +
+            '<div class="_md-sign">' +
+              '<span class="_md-thumb-text"></span>' +
+            '</div>' +
+            '<div class="_md-disabled-thumb"></div>' +
+          '</div>' +
         '</div>' +
-        '<div class="md-disabled-thumb"></div>' +
       '</div>',
-    link: postLink
+    compile: compile
   };
+
+  // **********************************************************
+  // Private Methods
+  // **********************************************************
+
+  function compile (tElement, tAttrs) {
+    var wrapper = angular.element(tElement[0].getElementsByClassName('_md-slider-wrapper'));
+
+    var tabIndex = tAttrs.tabindex || 0;
+    wrapper.attr('tabindex', tabIndex);
+
+    if (tAttrs.disabled || tAttrs.ngDisabled) wrapper.attr('tabindex', -1);
+
+    wrapper.attr('role', 'slider');
+
+    $mdAria.expect(tElement, 'aria-label');
+
+    return postLink;
+  }
 
   function postLink(scope, element, attr, ctrls) {
     $mdTheming(element);
@@ -87,71 +192,66 @@ function SliderDirective($mdTheming) {
       $viewChangeListeners: []
     };
 
-    var sliderCtrl = ctrls[1];
-    sliderCtrl.init(ngModelCtrl);
-  }
-}
-SliderDirective.$inject = ["$mdTheming"];
+    var containerCtrl = ctrls[1];
+    var container = angular.element($mdUtil.getClosest(element, '_md-slider-container', true));
+    var isDisabled = attr.ngDisabled ? angular.bind(null, $parse(attr.ngDisabled), scope.$parent) : function () {
+          return element[0].hasAttribute('disabled');
+        };
 
-/**
- * We use a controller for all the logic so that we can expose a few
- * things to unit tests
- */
-function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $mdUtil, $mdConstant) {
-
-  this.init = function init(ngModelCtrl) {
-    var thumb = angular.element($element[0].querySelector('.md-thumb'));
-    var thumbText = angular.element($element[0].querySelector('.md-thumb-text'));
+    var thumb = angular.element(element[0].querySelector('._md-thumb'));
+    var thumbText = angular.element(element[0].querySelector('._md-thumb-text'));
     var thumbContainer = thumb.parent();
-    var trackContainer = angular.element($element[0].querySelector('.md-track-container'));
-    var activeTrack = angular.element($element[0].querySelector('.md-track-fill'));
-    var tickContainer = angular.element($element[0].querySelector('.md-track-ticks'));
+    var trackContainer = angular.element(element[0].querySelector('._md-track-container'));
+    var activeTrack = angular.element(element[0].querySelector('._md-track-fill'));
+    var tickContainer = angular.element(element[0].querySelector('._md-track-ticks'));
+    var wrapper = angular.element(element[0].getElementsByClassName('_md-slider-wrapper'));
+    var content = angular.element(element[0].getElementsByClassName('_md-slider-content'));
     var throttledRefreshDimensions = $mdUtil.throttle(refreshSliderDimensions, 5000);
 
-    // Default values, overridable by $attrss
-    $attrs.min ? $attrs.$observe('min', updateMin) : updateMin(0);
-    $attrs.max ? $attrs.$observe('max', updateMax) : updateMax(100);
-    $attrs.step ? $attrs.$observe('step', updateStep) : updateStep(1);
+    // Default values, overridable by attrs
+    var DEFAULT_ROUND = 3;
+    var vertical = angular.isDefined(attr.mdVertical);
+    var discrete = angular.isDefined(attr.mdDiscrete);
+    angular.isDefined(attr.min) ? attr.$observe('min', updateMin) : updateMin(0);
+    angular.isDefined(attr.max) ? attr.$observe('max', updateMax) : updateMax(100);
+    angular.isDefined(attr.step)? attr.$observe('step', updateStep) : updateStep(1);
+    angular.isDefined(attr.round)? attr.$observe('round', updateRound) : updateRound(DEFAULT_ROUND);
 
     // We have to manually stop the $watch on ngDisabled because it exists
-    // on the parent $scope, and won't be automatically destroyed when
+    // on the parent scope, and won't be automatically destroyed when
     // the component is destroyed.
     var stopDisabledWatch = angular.noop;
-    if ($attrs.ngDisabled) {
-      stopDisabledWatch = $scope.$parent.$watch($attrs.ngDisabled, updateAriaDisabled);
+    if (attr.ngDisabled) {
+      stopDisabledWatch = scope.$parent.$watch(attr.ngDisabled, updateAriaDisabled);
     }
 
-    $mdAria.expect($element, 'aria-label');
+    $mdGesture.register(wrapper, 'drag', { horizontal: !vertical });
 
-    $element.attr('tabIndex', 0);
-    $element.attr('role', 'slider');
-    $element.on('keydown', keydownListener);
+    scope.mouseActive = false;
 
-    var hammertime = new Hammer($element[0], {
-      recognizers: [
-        [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL }]
-      ]
-    });
-    hammertime.on('hammer.input', onInput);
-    hammertime.on('panstart', onPanStart);
-    hammertime.on('pan', onPan);
-    hammertime.on('panend', onPanEnd);
+    wrapper
+      .on('keydown', keydownListener)
+      .on('mousedown', mouseDownListener)
+      .on('focus', focusListener)
+      .on('blur', blurListener)
+      .on('$md.pressdown', onPressDown)
+      .on('$md.pressup', onPressUp)
+      .on('$md.dragstart', onDragStart)
+      .on('$md.drag', onDrag)
+      .on('$md.dragend', onDragEnd);
 
     // On resize, recalculate the slider's dimensions and re-render
     function updateAll() {
       refreshSliderDimensions();
       ngModelRender();
-      redrawTicks();
     }
-    setTimeout(updateAll);
+    setTimeout(updateAll, 0);
 
-    var debouncedUpdateAll = $$rAF.debounce(updateAll);
+    var debouncedUpdateAll = $$rAF.throttle(updateAll);
     angular.element($window).on('resize', debouncedUpdateAll);
 
-    $scope.$on('$destroy', function() {
+    scope.$on('$destroy', function() {
       angular.element($window).off('resize', debouncedUpdateAll);
-      hammertime.destroy();
-      stopDisabledWatch();
     });
 
     ngModelCtrl.$render = ngModelRender;
@@ -165,50 +265,81 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
     var min;
     var max;
     var step;
+    var round;
     function updateMin(value) {
       min = parseFloat(value);
-      $element.attr('aria-valuemin', value);
+      element.attr('aria-valuemin', value);
       updateAll();
     }
     function updateMax(value) {
       max = parseFloat(value);
-      $element.attr('aria-valuemax', value);
+      element.attr('aria-valuemax', value);
       updateAll();
     }
     function updateStep(value) {
       step = parseFloat(value);
-      redrawTicks();
     }
-    function updateAriaDisabled(isDisabled) {
-      $element.attr('aria-disabled', !!isDisabled);
+    function updateRound(value) {
+      // Set max round digits to 6, after 6 the input uses scientific notation
+      round = minMaxValidator(parseInt(value), 0, 6);
+    }
+    function updateAriaDisabled() {
+      element.attr('aria-disabled', !!isDisabled());
     }
 
     // Draw the ticks with canvas.
-    // The alternative to drawing ticks with canvas is to draw one $element for each tick,
+    // The alternative to drawing ticks with canvas is to draw one element for each tick,
     // which could quickly become a performance bottleneck.
     var tickCanvas, tickCtx;
     function redrawTicks() {
-      if (!angular.isDefined($attrs.mdDiscrete)) return;
+      if (!discrete || isDisabled()) return;
+      if ( angular.isUndefined(step) )         return;
+
+      if ( step <= 0 ) {
+        var msg = 'Slider step value must be greater than zero when in discrete mode';
+        $log.error(msg);
+        throw new Error(msg);
+      }
 
       var numSteps = Math.floor( (max - min) / step );
       if (!tickCanvas) {
-        var trackTicksStyle = $window.getComputedStyle(tickContainer[0]);
-        tickCanvas = angular.element('<canvas style="position:absolute;">');
-        tickCtx = tickCanvas[0].getContext('2d');
-        tickCtx.fillStyle = trackTicksStyle.backgroundColor || 'black';
+        tickCanvas = angular.element('<canvas>').css('position', 'absolute');
         tickContainer.append(tickCanvas);
+
+        tickCtx = tickCanvas[0].getContext('2d');
       }
+
       var dimensions = getSliderDimensions();
+
+      // If `dimensions` doesn't have height and width it might be the first attempt so we will refresh dimensions
+      if (dimensions && !dimensions.height && !dimensions.width) {
+        refreshSliderDimensions();
+        dimensions = sliderDimensions;
+      }
+
       tickCanvas[0].width = dimensions.width;
       tickCanvas[0].height = dimensions.height;
 
       var distance;
       for (var i = 0; i <= numSteps; i++) {
-        distance = Math.floor(dimensions.width * (i / numSteps));
-        tickCtx.fillRect(distance - 1, 0, 2, dimensions.height);
+        var trackTicksStyle = $window.getComputedStyle(tickContainer[0]);
+        tickCtx.fillStyle = trackTicksStyle.color || 'black';
+
+        distance = Math.floor((vertical ? dimensions.height : dimensions.width) * (i / numSteps));
+
+        tickCtx.fillRect(vertical ? 0 : distance - 1,
+          vertical ? distance - 1 : 0,
+          vertical ? dimensions.width : 2,
+          vertical ? 2 : dimensions.height);
       }
     }
 
+    function clearTicks() {
+      if(tickCanvas && tickCtx) {
+        var dimensions = getSliderDimensions();
+        tickCtx.clearRect(0, 0, dimensions.width, dimensions.height);
+      }
+    }
 
     /**
      * Refreshing Dimensions
@@ -224,17 +355,15 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
     }
 
     /**
-     * left/right arrow listener
+     * left/right/up/down arrow listener
      */
     function keydownListener(ev) {
-      if($element[0].hasAttribute('disabled')) {
-        return;
-      }
+      if (isDisabled()) return;
 
       var changeAmount;
-      if (ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
+      if (vertical ? ev.keyCode === $mdConstant.KEY_CODE.DOWN_ARROW : ev.keyCode === $mdConstant.KEY_CODE.LEFT_ARROW) {
         changeAmount = -step;
-      } else if (ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
+      } else if (vertical ? ev.keyCode === $mdConstant.KEY_CODE.UP_ARROW : ev.keyCode === $mdConstant.KEY_CODE.RIGHT_ARROW) {
         changeAmount = step;
       }
       if (changeAmount) {
@@ -243,10 +372,33 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
         }
         ev.preventDefault();
         ev.stopPropagation();
-        $scope.$evalAsync(function() {
+        scope.$evalAsync(function() {
           setModelValue(ngModelCtrl.$viewValue + changeAmount);
         });
       }
+    }
+
+    function mouseDownListener() {
+      redrawTicks();
+
+      scope.mouseActive = true;
+      wrapper.removeClass('md-focused');
+
+      $timeout(function() {
+        scope.mouseActive = false;
+      }, 100);
+    }
+
+    function focusListener() {
+      if (scope.mouseActive === false) {
+        wrapper.addClass('md-focused');
+      }
+    }
+
+    function blurListener() {
+      wrapper.removeClass('md-focused');
+      element.removeClass('_md-active');
+      clearTicks();
     }
 
     /**
@@ -256,26 +408,40 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
       ngModelCtrl.$setViewValue( minMaxValidator(stepValidator(value)) );
     }
     function ngModelRender() {
-
       if (isNaN(ngModelCtrl.$viewValue)) {
         ngModelCtrl.$viewValue = ngModelCtrl.$modelValue;
       }
 
+      ngModelCtrl.$viewValue = minMaxValidator(ngModelCtrl.$viewValue);
+
       var percent = (ngModelCtrl.$viewValue - min) / (max - min);
-      $scope.modelValue = ngModelCtrl.$viewValue;
-      $element.attr('aria-valuenow', ngModelCtrl.$viewValue);
+      scope.modelValue = ngModelCtrl.$viewValue;
+      element.attr('aria-valuenow', ngModelCtrl.$viewValue);
       setSliderPercent(percent);
       thumbText.text( ngModelCtrl.$viewValue );
     }
 
-    function minMaxValidator(value) {
+    function minMaxValidator(value, minValue, maxValue) {
       if (angular.isNumber(value)) {
-        return Math.max(min, Math.min(max, value));
+        minValue = angular.isNumber(minValue) ? minValue : min;
+        maxValue = angular.isNumber(maxValue) ? maxValue : max;
+
+        return Math.max(minValue, Math.min(maxValue, value));
       }
     }
+
     function stepValidator(value) {
       if (angular.isNumber(value)) {
-        return Math.round(value / step) * step;
+        var formattedValue = (Math.round((value - min) / step) * step + min);
+        formattedValue = (Math.round(formattedValue * Math.pow(10, round)) / Math.pow(10, round));
+
+        if (containerCtrl && containerCtrl.fitInputWidthToTextLength){
+          $mdUtil.debounce(function () {
+            containerCtrl.fitInputWidthToTextLength(formattedValue.toString().length);
+          }, 100)();
+        }
+
+        return formattedValue;
       }
     }
 
@@ -283,91 +449,82 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
      * @param percent 0-1
      */
     function setSliderPercent(percent) {
-      activeTrack.css('width', (percent * 100) + '%');
-      thumbContainer.css(
-        $mdConstant.CSS.TRANSFORM,
-        'translate3d(' + getSliderDimensions().width * percent + 'px,0,0)'
-      );
-      $element.toggleClass('md-min', percent === 0);
-    }
 
+      percent = clamp(percent);
+
+      var thumbPosition = (percent * 100) + '%';
+
+      thumbContainer.css(vertical ? 'bottom' : 'left', thumbPosition);
+      activeTrack.css(vertical ? 'height' : 'width', thumbPosition);
+
+      element.toggleClass('_md-min', percent === 0);
+      element.toggleClass('_md-max', percent === 1);
+    }
 
     /**
      * Slide listeners
      */
-    var isSliding = false;
-    var isDiscrete = angular.isDefined($attrs.mdDiscrete);
+    var isDragging = false;
 
-    function onInput(ev) {
-      if (!isSliding && ev.eventType === Hammer.INPUT_START &&
-          !$element[0].hasAttribute('disabled')) {
+    function onPressDown(ev) {
+      if (isDisabled()) return;
 
-        isSliding = true;
+      element.addClass('_md-active');
+      element[0].focus();
+      refreshSliderDimensions();
 
-        $element.addClass('active');
-        $element[0].focus();
-        refreshSliderDimensions();
-
-        onPan(ev);
-
-        ev.srcEvent.stopPropagation();
-
-      } else if (isSliding && ev.eventType === Hammer.INPUT_END) {
-
-        if ( isSliding && isDiscrete ) onPanEnd(ev);
-        isSliding = false;
-
-        $element.removeClass('panning active');
-      }
+      var exactVal = percentToValue( positionToPercent( vertical ? ev.pointer.y : ev.pointer.x ));
+      var closestVal = minMaxValidator( stepValidator(exactVal) );
+      scope.$apply(function() {
+        setModelValue( closestVal );
+        setSliderPercent( valueToPercent(closestVal));
+      });
     }
-    function onPanStart() {
-      if (!isSliding) return;
-      $element.addClass('panning');
-    }
-    function onPan(ev) {
-      if (!isSliding) return;
+    function onPressUp(ev) {
+      if (isDisabled()) return;
 
+      element.removeClass('_md-dragging');
+
+      var exactVal = percentToValue( positionToPercent( vertical ? ev.pointer.y : ev.pointer.x ));
+      var closestVal = minMaxValidator( stepValidator(exactVal) );
+      scope.$apply(function() {
+        setModelValue(closestVal);
+        ngModelRender();
+      });
+    }
+    function onDragStart(ev) {
+      if (isDisabled()) return;
+      isDragging = true;
+
+      ev.stopPropagation();
+
+      element.addClass('_md-dragging');
+      setSliderFromEvent(ev);
+    }
+    function onDrag(ev) {
+      if (!isDragging) return;
+      ev.stopPropagation();
+      setSliderFromEvent(ev);
+    }
+    function onDragEnd(ev) {
+      if (!isDragging) return;
+      ev.stopPropagation();
+      isDragging = false;
+    }
+
+    function setSliderFromEvent(ev) {
       // While panning discrete, update only the
       // visual positioning but not the model value.
-
-      if ( isDiscrete ) adjustThumbPosition( ev.center.x );
-      else              doSlide( ev.center.x );
-
-      ev.preventDefault();
-      ev.srcEvent.stopPropagation();
+      if ( discrete ) adjustThumbPosition( vertical ? ev.pointer.y : ev.pointer.x );
+      else            doSlide( vertical ? ev.pointer.y : ev.pointer.x );
     }
-
-    function onPanEnd(ev) {
-      if ( isDiscrete && !$element[0].hasAttribute('disabled') ) {
-        // Convert exact to closest discrete value.
-        // Slide animate the thumb... and then update the model value.
-
-        var exactVal = percentToValue( positionToPercent( ev.center.x ));
-        var closestVal = minMaxValidator( stepValidator(exactVal) );
-
-        setSliderPercent( valueToPercent(closestVal));
-        $$rAF(function(){
-          setModelValue( closestVal );
-        });
-
-        ev.preventDefault();
-        ev.srcEvent.stopPropagation();
-      }
-    }
-
-    /**
-     * Expose for testing
-     */
-    this._onInput = onInput;
-    this._onPanStart = onPanStart;
-    this._onPan = onPan;
 
     /**
      * Slide the UI by changing the model value
      * @param x
      */
     function doSlide( x ) {
-      $scope.$evalAsync( function() {
+      scope.$evalAsync( function() {
         setModelValue( percentToValue( positionToPercent(x) ));
       });
     }
@@ -384,12 +541,25 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
     }
 
     /**
-     * Convert horizontal position on slider to percentage value of offset from beginning...
-     * @param x
+    * Clamps the value to be between 0 and 1.
+    * @param {number} value The value to clamp.
+    * @returns {number}
+    */
+    function clamp(value) {
+      return Math.max(0, Math.min(value || 0, 1));
+    }
+
+    /**
+     * Convert position on slider to percentage value of offset from beginning...
+     * @param position
      * @returns {number}
      */
-    function positionToPercent( x ) {
-      return Math.max(0, Math.min(1, (x - sliderDimensions.left) / (sliderDimensions.width)));
+    function positionToPercent( position ) {
+      var offset = vertical ? sliderDimensions.top : sliderDimensions.left;
+      var size = vertical ? sliderDimensions.height : sliderDimensions.width;
+      var calc = (position - offset) / size;
+
+      return Math.max(0, Math.min(1, vertical ? 1 - calc : calc));
     }
 
     /**
@@ -404,8 +574,8 @@ function SliderController($scope, $element, $attrs, $$rAF, $window, $mdAria, $md
     function valueToPercent( val ) {
       return (val - min)/(max - min);
     }
-
-  };
+  }
 }
-SliderController.$inject = ["$scope", "$element", "$attrs", "$$rAF", "$window", "$mdAria", "$mdUtil", "$mdConstant"];
-})();
+SliderDirective.$inject = ["$$rAF", "$window", "$mdAria", "$mdUtil", "$mdConstant", "$mdTheming", "$mdGesture", "$parse", "$log", "$timeout"];
+
+})(window, window.angular);

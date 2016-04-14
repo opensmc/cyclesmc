@@ -11,24 +11,25 @@
 unset GIT_DIR
 
 echo "running deploy scripts"
-# ln -sf $OPENSHIFT_DATA_DIR\assets $OPENSHIFT_REPO_DIR/php/
+ln -sf "${OPENSHIFT_REPO_DIR}/php/assets" "${OPENSHIFT_REPO_DIR}"
+ln -sf "${OPENSHIFT_REPO_DIR}/php/bower_components" "${OPENSHIFT_REPO_DIR}"
 # ln -sf $OPENSHIFT_DATA_DIR\cache $OPENSHIFT_REPO_DIR/php/
 #link assets and cache folders to the persistent data directories
 # ln -sf $OPENSHIFT_DATA_DIR\api/assets $OPENSHIFT_REPO_DIR/api/
 # ln -sf $OPENSHIFT_DATA_DIR\api/cache $OPENSHIFT_REPO_DIR/api/
 
 # php $OPENSHIFT_REPO_DIR\php/framework/cli-script.php dev/build flush=1
-php "${OPENSHIFT_REPO_DIR}\php/framework/cli-script.php" jsonservice/Indego/sync
+php "${OPENSHIFT_REPO_DIR}/php/framework/cli-script.php" jsonservice/Indego/sync
 
-php "${OPENSHIFT_REPO_DIR}\php/framework/cli-script.php" jsonservice/Trip/count start=01-01-2015
+php "${OPENSHIFT_REPO_DIR}/php/framework/cli-script.php" jsonservice/Trip/count start=04-01-2016
 
-OLD_HOME="${HOME}"
-pushd "${OPENSHIFT_REPO_DIR}"
-    HOME=`pwd`
-    npm config set prefix=~/npm
-    export PATH="${PATH}:~/npm/bin"
-    npm cache clean
-    npm install -g bower
-    bower install
-popd
-HOME="${OLD_HOME}"
+#OLD_HOME="${HOME}"
+#pushd "${OPENSHIFT_REPO_DIR}"
+#    HOME=`pwd`
+#    npm config set prefix=~/npm
+#    export PATH="${PATH}:~/npm/bin"
+#    npm cache clean
+#    npm install -g bower
+#    bower install
+#popd
+#HOME="${OLD_HOME}"

@@ -1,6 +1,6 @@
 (function(){
   angular
-    .module('cycleApp', ['cycle.home','cycle.terms','cycle.about','cycle.maps','cycle.shop','cycle.partners','ngNewRouter','ngMaterial','ngMessages','firebase'])
+    .module('cycleApp', ['cycle.home','cycle.terms','cycle.about','cycle.maps','cycle.partners','ngNewRouter','ngMaterial','ngMessages','firebase'])
     .config(function($mdThemingProvider, $mdIconProvider,$sceDelegateProvider,$httpProvider){
 
         $mdIconProvider
@@ -8,7 +8,6 @@
             .icon("menu"       , "./assets/svg/menu.svg"        , 24)
             .icon("star"      , "./assets/svg/star.svg"       , 24)
             .icon("help"      , "./assets/svg/help.svg"       , 24)
-            .icon("shopping"      , "./assets/svg/shopping.svg"       , 24)
             .icon("map"      , "./assets/svg/map.svg"       , 24)
             .icon("share"      , "./assets/svg/share.svg"       , 24)
             .icon("home"      , "./assets/svg/home.svg"       , 24)
@@ -58,7 +57,7 @@
    */
   function CycleController( $router,$location, $mdSidenav, $mdBottomSheet,$mdDialog,$mdToast, $log, $q,$filter,$scope,$rootScope,$http) {
     var self = this;
-    self.ApplicationTitle = "CyclePhilly";
+    self.ApplicationTitle = "CycleSMC";
     var parentEl = angular.element(document.body);
     var ref = new Firebase("https://cyclephilly.firebaseio.com");
     
@@ -164,7 +163,6 @@
      { path: '/dashboard/:id', component: 'dashboard' },
      { path: '/about', component: 'about' },
      { path: '/maps', component: 'maps' },
-     { path: '/shop', component: 'shop' },
      { path: '/partners', component: 'partners' },
      { path: '/profile', component: 'profile' },
      { path: '/terms', component: 'terms' },

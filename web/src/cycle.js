@@ -73,23 +73,19 @@
     var weatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/currently');
     var hourlyWeatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/hourly');
     hourlyWeatherRef.child('summary').on('value', function(snapshot) {
-        //console.log('Temperature is currently ' + snapshot.val());
         self.weather ={};
         self.weather.icon = iconData[1];
         self.weather.temperatureicon = {name: 'icon-Fahrenheit'   , color: "rgb(0,0,0)" }
         self.weather.message = snapshot.val();
         self.weather.style = "weather-style";
-        console.log(self.weather)
     });
     weatherRef.child('temperature').on('value', function(snapshot) {
-      // console.log('Temperature is currently ' + snapshot.val());
       self.weather.temperature = snapshot.val();
-  });
-
-    // var ref = new Firebase("https://platformx.firebaseio.com");
+    });
+  
     self.toggleList = function (){
       $mdSidenav('right').toggle()
-    }
+    };
     self.openPage = function(page){
       $mdSidenav('right').close();
       $location.path(page);
@@ -134,9 +130,8 @@
               );
               scope.closeDialog();
             } else {
-              console.log("Successfully created user account with uid:", userData.uid);
               if(scope.name !=''){
-                toastMessage = "Thanks "+scope.name+" we'll drop you a line real soon!";
+                toastMessage = "Thanks " + scope.name + " we'll drop you a line real soon!";
               }else{
                 toastMessage = "Thanks! We'll drop you a line real soon!";
               }
@@ -153,7 +148,6 @@
         }
         scope.closeDialog = function() {
           $mdDialog.hide();
-          console.log('here')
         }
       }
     }
@@ -180,35 +174,20 @@
 
       cycleRef.on('value', function(snapshot) {
         var fireTrips = snapshot.val();
-        console.log(fireTrips);
-        console.log( _.size(fireTrips) );
-        console.log( _.keys(fireTrips).length );
         var count = 0;
 
         for (var key in fireTrips) {
           var obj = fireTrips[key]; // this gets us inside the first child/subgroup of the object (months for firebase)
           for (var prop in obj) {
-
-            // console.log(prop);
-
             // important check that this is objects own property 
             // not from prototype prop inherited
-            //console.log("keys =" + _.keys(obj[prop]));
             if(obj.hasOwnProperty(prop)){ // this accesses the days
-
-
-            console.log("for this day" + prop + "- size = " + _.size(obj[prop]));
-            count = count + _.size(obj[prop]);
-
+              count = count + _.size(obj[prop]);
             }
           }
-
         }
-
-        console.log("All trips count = " + count);
         self.tripCount = count + " trips in 2015";
         $scope.tripCount=count + " trips in 2015";
-        console.log(self.tripCount);
       });
   });
 }

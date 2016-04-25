@@ -2,8 +2,6 @@
 require '../vendor/autoload.php';
 
 use Aws\S3\S3Client;
-// $aws = Aws::factory($config);
-
 
 // Instantiate an Amazon S3 client.
 $s3Client = S3Client::factory(array(
@@ -12,15 +10,12 @@ $s3Client = S3Client::factory(array(
     'credentials' => false
 ));
 
-require_once('Util.php');
-require_once('UserFactory.php');
-require_once('TripFactory.php');
-require_once('CoordFactory.php');
-require_once('NoteFactory.php');
-require_once('Decompress.php');
-
-
-
+require_once('../../libs/Util.php');
+require_once('../../libs/UserFactory.php');
+require_once('../../libs/TripFactory.php');
+require_once('../../libs/CoordFactory.php');
+require_once('../../libs/NoteFactory.php');
+require_once('../../libs/Decompress.php');
 
 define( 'DATE_FORMAT',        'Y-m-d h:i:s' );
 define( 'PROTOCOL_VERSION_1', 1 );
@@ -31,7 +26,6 @@ define( 'PROTOCOL_VERSION_4', 4 ); // this is for uploading the note data (compr
 Util::log( " ");
 Util::log( "+++++++++++++ Production: Upload Start +++++++++++++");
 
-/*
 Util::log ( "++++ HTTP Headers ++++" );
 $headers = array();
 foreach($_SERVER as $key => $value) {
@@ -41,11 +35,10 @@ foreach($_SERVER as $key => $value) {
     $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
     
     Util::log ( "{$header}: {$value}" );
-    //$headers[$header] = $value;
 }
 
 Util::log ( "++++++++++++++++++++++" );   
-*/
+
 
 // take protocol from HTTP header if present; otherwise URL query var or POST body
 if (isset($_SERVER['HTTP_CYCLEATL_PROTOCOL_VERSION'])) {
@@ -95,8 +88,7 @@ elseif ( $version == PROTOCOL_VERSION_4 ) {
 
 }
 
-// validate device ID: should be 32 but some android devices are reporting 31
-if ( is_string( $device ) /*&& strlen( $device ) === 32 || strlen( $device ) === 31*/)
+if ( is_string( $device ) )
 {
 	// try to lookup user by this device ID
 	$user = null;
@@ -104,7 +96,6 @@ if ( is_string( $device ) /*&& strlen( $device ) === 32 || strlen( $device ) ===
 	if ( $user = UserFactory::getUserByDevice( $device, new User( $ud ) ) )
 	{
 		Util::log( "found user {$user->id} for device $device" );
-		//print_r( $user );
 	}
 	/*elseif ( $user = UserFactory::insert( $device ) )
 	{

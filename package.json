@@ -16,5 +16,10 @@
   "scripts": {
     "postinstall": "bower update",
     "prestart": "npm update"
+  },
+  "dependencies": {
+    "angular": "1.5.3",
+    "bower": "1.7.9",
+    "eslint": "^2.8.0"
   }
 }

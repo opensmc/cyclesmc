@@ -1,3 +1,30 @@
+# Cycle San Mateo County
+CycleSMC bike tracking application
+===================
+
+This git repository is based on the CyclePhilly back-end server and follows many of
+the same conventions for installation. The big difference, of course, is which repo
+is treated as the source of truth. To run this in OpenShift, first create an account
+at https://www.openshift.com (an account suitable for running this application is
+free). You will then need to `gem install rhc` (you may need a working ruby install
+first). Finally, you'll be able to run something like:
+
+    rhc app create cyclesmc php-5.4 mysql-5.1 cron CYCLE_DB_NAME=cyclesmc --from-code=git://github.com/opensmc/cyclesmc
+    
+**NOTE:** You may want to change the `CYCLE_DB_NAME` and git remote from which to install
+
+Running Locally
+-----
+
+After cloning this repo, ensure that you have the following installed:
+1. MySQL
+2. PHP (5.4 or higher)
+Then, run
+
+    cd web && php -S localhost:8000
+    
+to create a local server running the app on port 8000.
+
 # cyclephilly
 CyclePhilly bike tracking application
 ===================

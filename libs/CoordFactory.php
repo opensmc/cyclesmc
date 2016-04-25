@@ -56,19 +56,9 @@ class CoordFactory
 		} else {
 			$query .= "trip_id IN (" . $db->escape_string( $trip_id ) . ")";
 		}
-		//$query .= " ORDER BY trip_id ASC, recorded ASC";
-/*
-Util::log( __METHOD__ . "() with query of length " . strlen($query) . 
-			': memory_usage = ' . memory_get_usage(True));
-*/
 		
 		if ( ( $result = $db->query( $query ) ) && $result->num_rows )
 		{
-/*
-		  Util::log( __METHOD__ . "() with query of length " . strlen($query) . 
-				' returned ' . $result->num_rows .' rows: memory_usage = ' . memory_get_usage(True));
-*/
-
 			// if the request was for an array of trip_ids then just return the $result class
 			// (I know, this is not very OO but putting it all in a structure in memory is no good either
 			if (is_array($trip_id)) {

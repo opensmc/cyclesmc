@@ -1,6 +1,6 @@
 (function(){
   angular
-    .module('cycleApp', ['cycle.home','cycle.terms','cycle.about','cycle.maps','cycle.partners','ngNewRouter','ngMaterial','ngMessages','firebase'])
+    .module('cycleApp', ['cycle.home','cycle.terms','cycle.about','cycle.maps','cycle.partners','ngNewRouter','ngMaterial','ngMessages'])
     .config(function($mdThemingProvider, $mdIconProvider,$sceDelegateProvider,$httpProvider){
 
         $mdIconProvider
@@ -11,7 +11,6 @@
             .icon("map"      , "./assets/svg/map.svg"       , 24)
             .icon("share"      , "./assets/svg/share.svg"       , 24)
             .icon("home"      , "./assets/svg/home.svg"       , 24)
-            
 
             $mdThemingProvider.theme('default')
                  .primaryPalette('grey', {
@@ -59,7 +58,6 @@
     var self = this;
     self.ApplicationTitle = "CycleSMC";
     var parentEl = angular.element(document.body);
-    var ref = new Firebase("https://cyclephilly.firebaseio.com");
     
     var iconData = [
       {name: 'icon-home'        , color: "#777" },
@@ -69,20 +67,7 @@
        // Use theming to color the font-icon
       {name: 'icon-settings'    , color:"#A00", theme:"md-warn md-hue-5"}
     ]
-    
-    var weatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/currently');
-    var hourlyWeatherRef = new Firebase('https://publicdata-weather.firebaseio.com/philadelphia/hourly');
-    hourlyWeatherRef.child('summary').on('value', function(snapshot) {
-        self.weather ={};
-        self.weather.icon = iconData[1];
-        self.weather.temperatureicon = {name: 'icon-Fahrenheit'   , color: "rgb(0,0,0)" }
-        self.weather.message = snapshot.val();
-        self.weather.style = "weather-style";
-    });
-    weatherRef.child('temperature').on('value', function(snapshot) {
-      self.weather.temperature = snapshot.val();
-    });
-  
+
     self.toggleList = function (){
       $mdSidenav('right').toggle()
     };
@@ -111,15 +96,16 @@
         scope.saveContact = function(){
           //Create firebase user if none exists
           scope.confirming = true;
+          /*
           ref.createUser({
             email    : scope.email,
             password : "narni@"
           }, function(error, userData) {
             if (error) {
               console.log("Error creating user:", error);
-              if(scope.name !=''){
-                toastMessage = "Thanks "+scope.name+" we'll drop you a line real soon!";
-              }else{
+              if (scope.name !=''){
+                toastMessage = "Thanks " + scope.name + " we'll drop you a line real soon!";
+              } else {
                 toastMessage = "Thanks! We'll drop you a line real soon!";
               }
               $mdToast.show(
@@ -144,7 +130,7 @@
               scope.closeDialog();
                 }
               });
-          
+              */          
         }
         scope.closeDialog = function() {
           $mdDialog.hide();
@@ -163,33 +149,6 @@
      { path: '/auth', component: 'auth' },
      { path: '/register', component: 'register' }
     ]);
-    
-    self.tripCount;
-
-    var tripCount2014;
-    var totalCount;
-
-    angular.element(document).ready(function(){
-      var cycleRef = new Firebase('https://cyclephilly.firebaseio.com/trips-started/2015/');
-
-      cycleRef.on('value', function(snapshot) {
-        var fireTrips = snapshot.val();
-        var count = 0;
-
-        for (var key in fireTrips) {
-          var obj = fireTrips[key]; // this gets us inside the first child/subgroup of the object (months for firebase)
-          for (var prop in obj) {
-            // important check that this is objects own property 
-            // not from prototype prop inherited
-            if(obj.hasOwnProperty(prop)){ // this accesses the days
-              count = count + _.size(obj[prop]);
-            }
-          }
-        }
-        self.tripCount = count + " trips in 2015";
-        $scope.tripCount=count + " trips in 2015";
-      });
-  });
 }
 
 })();
